@@ -9,6 +9,8 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 use Slim\Interfaces\RouteCollectorProxyInterface as Group;
+use \App\Application\Actions\Project\ListProjectsAction;
+
 
 return function (App $app) {
     // CORS Pre-Flight OPTIONS Request Handler
@@ -16,19 +18,41 @@ return function (App $app) {
         return $response;
     });
 
-    // Health check
-    $app->get('/', function (Request $request, Response $response) {
-        $response->getBody()->write(json_encode(['status' => 'ok', 'service' => 'Creador AV Veeva API']));
-        return $response->withHeader('Content-Type', 'application/json');
-    });
-
-    // ── Auth routes (public) ──────────────────────────────────────────────────
-    $app->group('/api/auth', function (Group $group) {
-        $group->post('/login', LoginAction::class);
-    });
-
-    // ── Protected routes (JWT required) ──────────────────────────────────────
+    // ── API Routes (v1) ──────────────────────────────────────────────────────
     $app->group('/api', function (Group $group) {
-        $group->get('/auth/me', MeAction::class);
-    })->add(JwtAuthMiddleware::class);
+        $group->group('/v1', function (Group $group) {
+            
+            // Health check
+            $group->get('/health', function (Request $request, Response $response) use ($group) {
+                $dbStatus = 'disconnected';
+                try {
+                    $pdo = $group->getContainer()->get(PDO::class);
+                    $pdo->query('SELECT 1');
+                    $dbStatus = 'connected';
+                } catch (\Exception $e) {
+                    $dbStatus = 'error: ' . $e->getMessage();
+                }
+
+                $response->getBody()->write(json_encode([
+                    'success' => true,
+                    'status' => 'ok', 
+                    'service' => 'Creador AV Veeva API',
+                    'database' => $dbStatus
+                ]));
+                return $response->withHeader('Content-Type', 'application/json');
+            });
+
+            // Public routes
+            $group->group('/auth', function (Group $group) {
+                $group->post('/login', LoginAction::class);
+                $group->get('/me', MeAction::class)->add(JwtAuthMiddleware::class);
+            });
+
+            // Projects
+            $group->group('/projects', function (Group $group) {
+                $group->get('', ListProjectsAction::class);
+                $group->post('', CreateProjectAction::class);
+            })->add(JwtAuthMiddleware::class);
+        });
+    });
 };

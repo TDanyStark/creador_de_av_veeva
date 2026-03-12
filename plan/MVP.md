@@ -30,7 +30,7 @@
 
 ---
 
-## Fase 2: Gestión de Proyectos, Paginación y Procesamiento PDF
+## Fase 2: Gestión de Proyectos, Paginación y Procesamiento PDF [x]
 **Objetivo:** Permitir subir el PDF, que el servidor lo divida en imágenes (slides) y mostrar la lista paginada en el Dashboard.
 
 ### 2.1 Backend

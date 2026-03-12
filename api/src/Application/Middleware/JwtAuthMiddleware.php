@@ -38,8 +38,9 @@ class JwtAuthMiddleware implements MiddlewareInterface
             $jwtSecret = $_ENV['JWT_SECRET'] ?? 'default_secret';
             $decoded   = JWT::decode($token, new Key($jwtSecret, 'HS256'));
 
-            // Inject payload into request attributes for downstream actions
+            // Inject payload and user_id into request attributes for downstream actions
             $request = $request->withAttribute('jwt_payload', $decoded);
+            $request = $request->withAttribute('user_id', $decoded->sub);
 
             return $handler->handle($request);
         } catch (\Exception $e) {

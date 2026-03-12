@@ -9,6 +9,7 @@ use Monolog\Logger;
 use Monolog\Processor\UidProcessor;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
+use \App\Infrastructure\Services\PdfToImageService;
 
 return function (ContainerBuilder $containerBuilder) {
     $containerBuilder->addDefinitions([
@@ -42,6 +43,12 @@ return function (ContainerBuilder $containerBuilder) {
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES   => false,
             ]);
+        },
+
+        PdfToImageService::class => function (ContainerInterface $c) {
+            // Path to public/uploads/projects
+            $uploadDir = __DIR__ . '/../public/uploads/projects';
+            return new PdfToImageService($uploadDir);
         },
     ]);
 };
