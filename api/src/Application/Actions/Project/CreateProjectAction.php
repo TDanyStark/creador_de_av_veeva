@@ -68,7 +68,7 @@ class CreateProjectAction extends ProjectAction
 
             return $this->respondWithData([
                 'project' => $project,
-                'slides_count' => count($imagePaths)
+                'slidesCount' => count($imagePaths)
             ], 201);
 
         } catch (Exception $e) {

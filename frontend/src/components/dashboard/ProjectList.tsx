@@ -2,11 +2,7 @@ import { ProjectCard } from './ProjectCard'
 import { Skeleton } from '@/components/ui/skeleton'
 import { FolderPlus } from 'lucide-react'
 
-interface Project {
-  id: number
-  name: string
-  created_at: string
-}
+import type { Project } from '@/types/api'
 
 interface ProjectListProps {
   projects: Project[]
@@ -43,7 +39,8 @@ export function ProjectList({ projects, isLoading }: ProjectListProps) {
           key={project.id}
           id={project.id}
           name={project.name}
-          createdAt={project.created_at}
+          createdAt={project.createdAt}
+          slidesCount={project.slidesCount}
         />
       ))}
     </div>

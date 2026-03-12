@@ -20,9 +20,12 @@ class ProjectRepository implements ProjectRepositoryInterface
     public function findByUserIdPaginated(int $userId, int $limit, int $offset): array
     {
         $stmt = $this->connection->prepare("
-            SELECT * FROM projects 
-            WHERE user_id = :user_id 
-            ORDER BY created_at DESC 
+            SELECT p.*, COUNT(s.id) as slides_count 
+            FROM projects p
+            LEFT JOIN slides s ON p.id = s.project_id
+            WHERE p.user_id = :user_id 
+            GROUP BY p.id
+            ORDER BY p.created_at DESC 
             LIMIT :limit OFFSET :offset
         ");
         $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
@@ -37,7 +40,8 @@ class ProjectRepository implements ProjectRepositoryInterface
                 (int)$row['user_id'],
                 $row['name'],
                 $row['created_at'],
-                $row['updated_at']
+                $row['updated_at'],
+                (int)$row['slides_count']
             );
         }
 
@@ -81,7 +85,13 @@ class ProjectRepository implements ProjectRepositoryInterface
 
     public function findById(int $id): ?Project
     {
-        $stmt = $this->connection->prepare("SELECT * FROM projects WHERE id = :id");
+        $stmt = $this->connection->prepare("
+            SELECT p.*, COUNT(s.id) as slides_count 
+            FROM projects p
+            LEFT JOIN slides s ON p.id = s.project_id
+            WHERE p.id = :id
+            GROUP BY p.id
+        ");
         $stmt->execute([':id' => $id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -94,7 +104,8 @@ class ProjectRepository implements ProjectRepositoryInterface
             (int)$row['user_id'],
             $row['name'],
             $row['created_at'],
-            $row['updated_at']
+            $row['updated_at'],
+            (int)$row['slides_count']
         );
     }
 }

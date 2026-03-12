@@ -38,6 +38,7 @@ export interface Project {
   name: string
   createdAt: string
   updatedAt: string
+  slidesCount: number
 }
 
 export interface Slide {

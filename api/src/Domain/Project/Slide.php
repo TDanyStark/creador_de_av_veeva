@@ -24,8 +24,8 @@ class Slide implements JsonSerializable
         $this->id = $id;
         $this->projectId = $projectId;
         $this->slideNumber = $slideNumber;
-        $this->imagePath = $imagePath;
-        $this->createdAt = $createdAt;
+        $this->imagePath = $imagePath ?? '';
+        $this->createdAt = $createdAt ?? '';
     }
 
     public function getId(): ?int
@@ -53,9 +53,13 @@ class Slide implements JsonSerializable
     {
         return [
             'id' => $this->id,
+            'projectId' => $this->projectId,
             'project_id' => $this->projectId,
+            'slideNumber' => $this->slideNumber,
             'slide_number' => $this->slideNumber,
+            'imagePath' => $this->imagePath,
             'image_path' => $this->imagePath,
+            'createdAt' => $this->createdAt,
             'created_at' => $this->createdAt,
         ];
     }
