@@ -58,7 +58,7 @@
         }
     },
     "scripts": {
-        "start": "php -S localhost:8081 -t public",
+        "start": "php -d post_max_size=100M -d upload_max_filesize=100M -S localhost:8081 -t public",
         "migrate": "php database/migrate.php up",
         "migrate:fresh": "php database/migrate.php fresh",
         "seed": "php database/seed.php all",

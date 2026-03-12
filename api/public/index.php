@@ -2,6 +2,13 @@
 
 declare(strict_types=1);
 
+// Force PHP limits for large uploads (if current environment allows)
+@ini_set('upload_max_filesize', '100M');
+@ini_set('post_max_size', '110M');
+@ini_set('memory_limit', '256M');
+@ini_set('max_execution_time', '300');
+@ini_set('max_input_time', '300');
+
 use App\Application\Handlers\HttpErrorHandler;
 use App\Application\Handlers\ShutdownHandler;
 use App\Application\ResponseEmitter\ResponseEmitter;
