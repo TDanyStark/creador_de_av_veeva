@@ -1,5 +1,6 @@
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { cn } from '@/lib/utils'
 
 interface SubmitButtonProps {
   isLoading: boolean
@@ -16,14 +17,18 @@ export function SubmitButton({
     <Button
       type="submit"
       size="lg"
-      className="w-full"
+      variant="default"
+      className={cn(
+        "w-full transition-all duration-300",
+        "shadow-lg shadow-brand-600/20 hover:shadow-brand-500/40 hover:-translate-y-0.5 active:translate-y-0"
+      )}
       disabled={isLoading}
     >
       {isLoading ? (
-        <>
+        <div className="flex items-center gap-2">
           <Loader2 className="h-4 w-4 animate-spin" />
-          {loadingLabel}
-        </>
+          <span>{loadingLabel}</span>
+        </div>
       ) : (
         label
       )}
