@@ -56,7 +56,7 @@
 
 ---
 
-## Fase 3: Editor Visual (Lienzo) y Navegación Base (Hotspots)
+## Fase 3: Editor Visual (Lienzo) y Navegación Base (Hotspots) [x]
 **Objetivo:** Interfaz principal de edición. Ver slides, navegar entre ellos y dibujar anclas de navegación Veeva.
 
 ### 3.1 Backend

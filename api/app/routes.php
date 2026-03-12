@@ -11,6 +11,9 @@ use Slim\App;
 use Slim\Interfaces\RouteCollectorProxyInterface as Group;
 use \App\Application\Actions\Project\ListProjectsAction;
 use \App\Application\Actions\Project\CreateProjectAction;
+use \App\Application\Actions\Project\GetProjectEditorDataAction;
+use \App\Application\Actions\Slide\SaveNavigationLinkAction;
+use \App\Application\Actions\Slide\DeleteNavigationLinkAction;
 
 
 return function (App $app) {
@@ -53,6 +56,16 @@ return function (App $app) {
             $group->group('/projects', function (Group $group) {
                 $group->get('', ListProjectsAction::class);
                 $group->post('', CreateProjectAction::class);
+                $group->get('/{id}/editor-data', GetProjectEditorDataAction::class);
+            })->add(JwtAuthMiddleware::class);
+
+            // Slides & Navigation
+            $group->group('/slides', function (Group $group) {
+                $group->post('/{id}/navigation', SaveNavigationLinkAction::class);
+            })->add(JwtAuthMiddleware::class);
+
+            $group->group('/navigation-links', function (Group $group) {
+                $group->delete('/{id}', DeleteNavigationLinkAction::class);
             })->add(JwtAuthMiddleware::class);
         });
     });

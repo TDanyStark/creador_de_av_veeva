@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { PrivateRoute } from '@/components/shared/PrivateRoute'
 import { LoginPage } from '@/pages/LoginPage'
 import { DashboardPage } from '@/pages/DashboardPage'
+import { EditorPage } from '@/pages/EditorPage'
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           {/* Private */}
           <Route element={<PrivateRoute />}>
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/editor/:id" element={<EditorPage />} />
           </Route>
 
           {/* Fallback */}

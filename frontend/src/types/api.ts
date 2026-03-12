@@ -30,3 +30,36 @@ export interface MeResponseData {
     updated_at: string
   }
 }
+
+// ── Projects ──────────────────────────────────────────────────────────────────
+export interface Project {
+  id: number
+  userId: number
+  name: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface Slide {
+  id: number
+  projectId: number
+  slideNumber: number
+  imagePath: string
+  createdAt: string
+}
+
+export interface NavigationLink {
+  id: number | null
+  slideId: number
+  targetSlideId: number | null
+  topPercent: number
+  leftPercent: number
+  widthPercent: number
+  heightPercent: number
+}
+
+export interface EditorDataResponse {
+  project: Project
+  slides: Slide[]
+  navigationLinks: NavigationLink[]
+}
