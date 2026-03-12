@@ -9,19 +9,23 @@ use JsonSerializable;
 class User implements JsonSerializable
 {
     private ?int $id;
+    private string $email;
+    private string $passwordHash;
+    private ?string $createdAt;
+    private ?string $updatedAt;
 
-    private string $username;
-
-    private string $firstName;
-
-    private string $lastName;
-
-    public function __construct(?int $id, string $username, string $firstName, string $lastName)
-    {
-        $this->id = $id;
-        $this->username = strtolower($username);
-        $this->firstName = ucfirst($firstName);
-        $this->lastName = ucfirst($lastName);
+    public function __construct(
+        ?int $id,
+        string $email,
+        string $passwordHash,
+        ?string $createdAt = null,
+        ?string $updatedAt = null
+    ) {
+        $this->id           = $id;
+        $this->email        = strtolower(trim($email));
+        $this->passwordHash = $passwordHash;
+        $this->createdAt    = $createdAt;
+        $this->updatedAt    = $updatedAt;
     }
 
     public function getId(): ?int
@@ -29,29 +33,39 @@ class User implements JsonSerializable
         return $this->id;
     }
 
-    public function getUsername(): string
+    public function getEmail(): string
     {
-        return $this->username;
+        return $this->email;
     }
 
-    public function getFirstName(): string
+    public function getPasswordHash(): string
     {
-        return $this->firstName;
+        return $this->passwordHash;
     }
 
-    public function getLastName(): string
+    public function getCreatedAt(): ?string
     {
-        return $this->lastName;
+        return $this->createdAt;
+    }
+
+    public function getUpdatedAt(): ?string
+    {
+        return $this->updatedAt;
+    }
+
+    public function verifyPassword(string $plainPassword): bool
+    {
+        return password_verify($plainPassword, $this->passwordHash);
     }
 
     #[\ReturnTypeWillChange]
     public function jsonSerialize(): array
     {
         return [
-            'id' => $this->id,
-            'username' => $this->username,
-            'firstName' => $this->firstName,
-            'lastName' => $this->lastName,
+            'id'         => $this->id,
+            'email'      => $this->email,
+            'created_at' => $this->createdAt,
+            'updated_at' => $this->updatedAt,
         ];
     }
 }

@@ -1,6 +1,6 @@
 # Plan Técnico de Ejecución: MVP Creador de AV Veeva (Hostinger)
 
-## Fase 1: Base de Datos, Autenticación JWT y Setup Base Frontend
+## Fase 1: Base de Datos, Autenticación JWT y Setup Base Frontend [x]
 **Objetivo:** Tener el sistema de login seguro operando con estado persistente, manejador de peticiones y estructura Clean Architecture base.
 
 ### 1.1 Backend (Slim PHP - `/api`)
