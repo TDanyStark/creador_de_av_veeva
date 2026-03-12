@@ -1,0 +1,15 @@
+RewriteEngine On
+
+# Forward API requests to the api folder
+RewriteCond %{REQUEST_URI} ^/api/.*
+RewriteRule ^api/(.*)$ api/public/index.php [QSA,L]
+
+# For React Frontend
+# If the file or directory exists, serve it directly
+RewriteCond %{DOCUMENT_ROOT}/frontend/dist/%{REQUEST_URI} -f [OR]
+RewriteCond %{DOCUMENT_ROOT}/frontend/dist/%{REQUEST_URI} -d
+RewriteRule ^(.*)$ frontend/dist/$1 [L]
+
+# Otherwise, redirect all other requests to React's index.html
+RewriteCond %{REQUEST_URI} !^/api/
+RewriteRule ^(.*)$ frontend/dist/index.html [L]

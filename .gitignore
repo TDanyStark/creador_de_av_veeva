@@ -1,0 +1,37 @@
+# IDEs and Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# API (PHP)
+/api/vendor/
+/api/var/
+/api/logs/*
+!/api/logs/README.md
+/api/.phpunit.result.cache
+/api/coverage/
+/api/.env
+/api/.env.*
+!/api/.env.example
+/api/public/storage
+/api/public/hot
+/api/storage/*.key
+
+# Frontend (Node.js/Vite)
+/frontend/node_modules/
+/frontend/dist/
+/frontend/dist-ssr/
+/frontend/.env
+/frontend/.env.*
+!/frontend/.env.example
+/frontend/npm-debug.log*
+/frontend/yarn-debug.log*
+/frontend/pnpm-debug.log*
+
+# General
+/node_modules/
+/vendor/
+.env
+*.log
