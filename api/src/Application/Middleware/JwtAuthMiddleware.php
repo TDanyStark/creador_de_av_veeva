@@ -12,7 +12,6 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
-use Slim\Psr7\Response as SlimResponse;
 
 class JwtAuthMiddleware implements MiddlewareInterface
 {
@@ -28,7 +27,7 @@ class JwtAuthMiddleware implements MiddlewareInterface
         $authHeader = $request->getHeaderLine('Authorization');
 
         if (empty($authHeader) || !str_starts_with($authHeader, 'Bearer ')) {
-            $response = new SlimResponse();
+            $response = $this->responseFactory->createResponse();
             return JsonResponseHelper::unauthorized($response, 'Token de autorización requerido.');
         }
 
@@ -44,7 +43,7 @@ class JwtAuthMiddleware implements MiddlewareInterface
 
             return $handler->handle($request);
         } catch (\Exception $e) {
-            $response = new SlimResponse();
+            $response = $this->responseFactory->createResponse();
             return JsonResponseHelper::unauthorized($response, 'Token inválido o expirado.');
         }
     }

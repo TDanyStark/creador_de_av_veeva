@@ -9,6 +9,8 @@ use Monolog\Logger;
 use Monolog\Processor\UidProcessor;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
+use Psr\Http\Message\ResponseFactoryInterface;
+use Slim\Factory\AppFactory;
 use \App\Infrastructure\Services\PdfToImageService;
 
 return function (ContainerBuilder $containerBuilder) {
@@ -25,6 +27,10 @@ return function (ContainerBuilder $containerBuilder) {
             $logger->pushHandler($handler);
 
             return $logger;
+        },
+
+        ResponseFactoryInterface::class => function (ContainerInterface $c) {
+            return AppFactory::determineResponseFactory();
         },
 
         PDO::class => function (ContainerInterface $c) {

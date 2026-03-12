@@ -10,6 +10,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 use Slim\Interfaces\RouteCollectorProxyInterface as Group;
 use \App\Application\Actions\Project\ListProjectsAction;
+use \App\Application\Actions\Project\CreateProjectAction;
 
 
 return function (App $app) {
