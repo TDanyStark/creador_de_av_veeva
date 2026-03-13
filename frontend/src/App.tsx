@@ -6,6 +6,7 @@ import { PrivateRoute } from '@/components/shared/PrivateRoute'
 import { LoginPage } from '@/pages/LoginPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { EditorPage } from '@/pages/EditorPage'
+import { PreviewPage } from '@/pages/PreviewPage'
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route element={<PrivateRoute />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/editor/:id" element={<EditorPage />} />
+            <Route path="/preview/:id" element={<PreviewPage />} />
           </Route>
 
           {/* Fallback */}

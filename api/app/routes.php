@@ -19,7 +19,7 @@ use \App\Application\Actions\Slide\DeletePopupAction;
 use \App\Application\Actions\Project\AddSlidesAction;
 use \App\Application\Actions\Project\ReorderSlidesAction;
 use \App\Application\Actions\Slide\DeleteSlideAction;
-
+use \App\Application\Actions\Project\ExportProjectAction;
 
 return function (App $app) {
     // CORS Pre-Flight OPTIONS Request Handler
@@ -64,6 +64,7 @@ return function (App $app) {
                 $group->get('/{id}/editor-data', GetProjectEditorDataAction::class);
                 $group->post('/{id}/slides', AddSlidesAction::class);
                 $group->patch('/{id}/slides/reorder', ReorderSlidesAction::class);
+                $group->post('/{id}/export', ExportProjectAction::class);
             })->add(JwtAuthMiddleware::class);
 
             // Slides & Navigation

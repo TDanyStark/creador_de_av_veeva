@@ -120,7 +120,7 @@
 
 ---
 
-## Fase 6: Preview (Motor Veeva Web)
+## Fase 6: Preview (Motor Veeva Web) [x]
 **Objetivo:** Visor web que emula el iPad. Todo local en React antes de generar el ZIP.
 
 ### 6.1 Frontend

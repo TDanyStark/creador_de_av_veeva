@@ -56,5 +56,11 @@ return function (ContainerBuilder $containerBuilder) {
             $uploadDir = __DIR__ . '/../public/uploads/projects';
             return new PdfToImageService($uploadDir);
         },
+
+        \App\Infrastructure\Services\ProjectExporterService::class => function (ContainerInterface $c) {
+            $exportsDir = __DIR__ . '/../public/exports';
+            $publicDir = __DIR__ . '/../public';
+            return new \App\Infrastructure\Services\ProjectExporterService($exportsDir, $publicDir);
+        },
     ]);
 };

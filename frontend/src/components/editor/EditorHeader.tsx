@@ -1,6 +1,6 @@
 import { ChevronLeft, Layers, Save, Play, Link as LinkIcon, Maximize2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 
 interface EditorHeaderProps {
@@ -11,6 +11,7 @@ interface EditorHeaderProps {
 
 export function EditorHeader({ projectName, activeMode, onModeChange }: EditorHeaderProps) {
   const navigate = useNavigate()
+  const { id } = useParams()
 
   return (
     <header className="flex h-16 shrink-0 items-center justify-between border-b border-surface-200/10 bg-surface-950 px-6">
@@ -69,7 +70,12 @@ export function EditorHeader({ projectName, activeMode, onModeChange }: EditorHe
       </div>
 
       <div className="flex items-center gap-3">
-        <Button variant="outline" size="sm" className="gap-2 border-surface-800 bg-surface-900 text-surface-200 hover:bg-surface-800 hover:text-surface-50">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => navigate(`/preview/${id}?${window.location.search.replace('?', '')}`)}
+          className="gap-2 border-surface-800 bg-surface-900 text-surface-200 hover:bg-surface-800 hover:text-surface-50"
+        >
           <Play className="h-4 w-4 fill-current" />
           Vista Previa
         </Button>
