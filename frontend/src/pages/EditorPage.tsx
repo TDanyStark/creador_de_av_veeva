@@ -182,12 +182,25 @@ export function EditorPage() {
           activeMode={activeMode}
           links={links.filter(l => l.slideId === currentSlide?.id)}
           selectedLinkId={selectedLinkId}
-          onSelectLink={setSelectedLinkId}
+          onSelectLink={(id) => { 
+            setSelectedLinkId(id); 
+            if (id) {
+              setActiveMode('navigation');
+              setSelectedPopupId(null);
+            }
+          }}
           onAddLink={handleAddLink}
           onUpdateLink={handleUpdateLink}
           popups={popups.filter(p => p.slideId === currentSlide?.id)}
           selectedPopupId={selectedPopupId}
-          onSelectPopup={(id) => { setSelectedPopupId(id); setIsPreviewVisible(false); }}
+          onSelectPopup={(id) => { 
+            setSelectedPopupId(id); 
+            setIsPreviewVisible(false); 
+            if (id) {
+              setActiveMode('popup');
+              setSelectedLinkId(null);
+            }
+          }}
           onAddPopup={(newPopup) => savePopupMutation.mutate({ popup: newPopup })}
           onUpdatePopup={handleUpdatePopup}
           onSavePopup={(popup, image) => savePopupMutation.mutate({ popup, image })}
