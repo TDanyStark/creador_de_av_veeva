@@ -136,7 +136,7 @@
 
 ---
 
-## Fase 7: Empaquetador y Motor de Plantillas ZIP
+## Fase 7: Empaquetador y Motor de Plantillas ZIP [x]
 **Objetivo:** El core del negocio. Convertir la data estructurada en los assets físicos de Veeva.
 
 ### 7.1 Backend

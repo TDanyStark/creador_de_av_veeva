@@ -25,7 +25,7 @@ class ProjectExporterService
         }
     }
 
-    public function export(array $projectArr, array $slidesArr, array $linksArr, array $popupsArr): string
+    public function export(array $projectArr, array $slidesArr, array $linksArr, array $popupsArr): array
     {
         $projectId = $projectArr['id'] ?? 'unknown';
         $projectName = $projectArr['name'] ?? 'project';
@@ -61,16 +61,16 @@ class ProjectExporterService
             }
 
             // Filter links and popups for this slide
-            $slideLinks = array_filter($linksArr, fn($l) => $l['slide_id'] === $slideId);
-            $slidePopups = array_filter($popupsArr, fn($p) => $p['slide_id'] === $slideId);
+            $slideLinks = array_filter($linksArr, fn($l) => $l['slideId'] === $slideId);
+            $slidePopups = array_filter($popupsArr, fn($p) => $p['slideId'] === $slideId);
 
             // Fetch target slides to get the slide name for veeva:gotoSlide()
             $linksWithTargetName = [];
             foreach ($slideLinks as $link) {
-                $targetSlide = array_filter($slidesArr, fn($s) => $s['id'] === $link['target_slide_id']);
+                $targetSlide = array_filter($slidesArr, fn($s) => $s['id'] === $link['targetSlideId']);
                 $targetSlide = reset($targetSlide);
                 if ($targetSlide) {
-                    $targetSlideNumber = str_pad((string)$targetSlide['slide_number'], 2, '0', STR_PAD_LEFT);
+                    $targetSlideNumber = str_pad((string)$targetSlide['slideNumber'], 2, '0', STR_PAD_LEFT);
                     $targetSlideName = "slide_{$targetSlideNumber}";
                     $link['target_slide_name'] = $targetSlideName;
                     $linksWithTargetName[] = $link;
@@ -79,7 +79,7 @@ class ProjectExporterService
 
             // Also copy popup images
             foreach ($slidePopups as $popup) {
-                $popupImgPath = $this->publicDir . $popup['image_path'];
+                $popupImgPath = $this->publicDir . $popup['imagePath'];
                 $popupFilename = basename($popupImgPath);
                 $distPopupPath = $slideDir . '/images/' . $popupFilename;
                 if (file_exists($popupImgPath)) {
@@ -145,15 +145,15 @@ class ProjectExporterService
             $triggerId = 'popup_trigger_' . $popup['id'];
             $overlayId = 'popup_overlay_' . $popup['id'];
             $closeId = 'popup_close_' . $popup['id'];
-            $imgName = basename($popup['image_path']);
+            $imgName = basename($popup['imagePath']);
             
-            $exclusiveClass = $popup['exclusive_open'] ? ' exclusive' : '';
+            $exclusiveClass = $popup['exclusiveOpen'] ? ' exclusive' : '';
 
             $html .= "\n        <button id=\"{$triggerId}\" class=\"popup-trigger{$exclusiveClass}\" data-target=\"{$overlayId}\"></button>";
             $html .= "\n        <div id=\"{$overlayId}\" class=\"popup-overlay\">
             <div class=\"popup-content\">
                 <img src=\"images/{$imgName}\" alt=\"Popup\">
-                <button id=\"{$closeId}\" class=\"popup-close\" style=\"color: {$popup['close_color']}\">&times;</button>
+                <button id=\"{$closeId}\" class=\"popup-close\" style=\"color: {$popup['closeColor']}\">&times;</button>
             </div>
         </div>";
         }
@@ -181,16 +181,16 @@ class ProjectExporterService
 
         foreach ($links as $link) {
             $id = '#link_' . $link['id'];
-            $css .= "{$id} { top: {$link['top_percent']}%; left: {$link['left_percent']}%; width: {$link['width_percent']}%; height: {$link['height_percent']}%; }\n";
+            $css .= "{$id} { top: {$link['topPercent']}%; left: {$link['leftPercent']}%; width: {$link['widthPercent']}%; height: {$link['heightPercent']}%; }\n";
         }
 
         foreach ($popups as $popup) {
             $triggerId = '#popup_trigger_' . $popup['id'];
-            $css .= "{$triggerId} { top: {$popup['button_top']}%; left: {$popup['button_left']}%; width: {$popup['button_width']}%; height: {$popup['button_height']}%; }\n";
+            $css .= "{$triggerId} { top: {$popup['buttonTop']}%; left: {$popup['buttonLeft']}%; width: {$popup['buttonWidth']}%; height: {$popup['buttonHeight']}%; }\n";
             
             // Adjust popup position directly based on percentage
             $overlayId = '#popup_overlay_' . $popup['id'];
-            $css .= "{$overlayId} .popup-content { width: {$popup['popup_width_percent']}%; position: absolute; top: {$popup['popup_top']}%; left: {$popup['popup_left']}%; transform: none; }\n";
+            $css .= "{$overlayId} .popup-content { width: {$popup['popupWidthPercent']}%; position: absolute; top: {$popup['popupTop']}%; left: {$popup['popupLeft']}%; transform: none; }\n";
         }
 
         return $css;

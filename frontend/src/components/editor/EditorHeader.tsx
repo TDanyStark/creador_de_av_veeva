@@ -2,6 +2,7 @@ import { ChevronLeft, Layers, Save, Play, Link as LinkIcon, Maximize2 } from 'lu
 import { Button } from '@/components/ui/button'
 import { useNavigate, useParams } from 'react-router-dom'
 import { cn } from '@/lib/utils'
+import { ExportButton } from './ExportButton'
 
 interface EditorHeaderProps {
   projectName?: string
@@ -79,6 +80,7 @@ export function EditorHeader({ projectName, activeMode, onModeChange }: EditorHe
           <Play className="h-4 w-4 fill-current" />
           Vista Previa
         </Button>
+        <ExportButton />
         <Button variant="default" size="sm" className="gap-2 bg-brand-600 text-white hover:bg-brand-500 shadow-lg shadow-brand-900/40">
           <Save className="h-4 w-4" />
           Guardar Cambios
