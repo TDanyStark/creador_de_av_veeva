@@ -17,6 +17,7 @@
 !/api/.env.example
 /api/public/storage
 /api/public/uploads
+/api/public/exports
 /api/public/hot
 /api/storage/*.key
 

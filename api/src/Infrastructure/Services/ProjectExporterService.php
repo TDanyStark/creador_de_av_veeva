@@ -116,7 +116,7 @@ class ProjectExporterService
         $filename = basename($masterZipPath);
         return [
             'path' => $masterZipPath,
-            'url' => '/api/public/exports/' . $filename
+            'url' => '/exports/' . $filename
         ];
     }
 
