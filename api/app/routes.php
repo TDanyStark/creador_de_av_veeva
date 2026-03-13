@@ -14,6 +14,8 @@ use \App\Application\Actions\Project\CreateProjectAction;
 use \App\Application\Actions\Project\GetProjectEditorDataAction;
 use \App\Application\Actions\Slide\SaveNavigationLinkAction;
 use \App\Application\Actions\Slide\DeleteNavigationLinkAction;
+use \App\Application\Actions\Slide\SavePopupAction;
+use \App\Application\Actions\Slide\DeletePopupAction;
 
 
 return function (App $app) {
@@ -62,10 +64,15 @@ return function (App $app) {
             // Slides & Navigation
             $group->group('/slides', function (Group $group) {
                 $group->post('/{id}/navigation', SaveNavigationLinkAction::class);
+                $group->post('/{id}/popups', SavePopupAction::class);
             })->add(JwtAuthMiddleware::class);
 
             $group->group('/navigation-links', function (Group $group) {
                 $group->delete('/{id}', DeleteNavigationLinkAction::class);
+            })->add(JwtAuthMiddleware::class);
+
+            $group->group('/popups', function (Group $group) {
+                $group->delete('/{id}', DeletePopupAction::class);
             })->add(JwtAuthMiddleware::class);
         });
     });

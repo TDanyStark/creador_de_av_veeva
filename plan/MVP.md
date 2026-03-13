@@ -79,7 +79,7 @@
 
 ---
 
-## Fase 4: Editor Visual - Popups Dinámicos
+## Fase 4: Editor Visual - Popups Dinámicos [x]
 **Objetivo:** Añadir botones y ventanas modales (imágenes) personalizadas.
 
 ### 4.1 Backend

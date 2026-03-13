@@ -7,6 +7,7 @@ namespace App\Application\Actions\Project;
 use App\Domain\Project\ProjectRepositoryInterface;
 use App\Domain\Project\SlideRepositoryInterface;
 use App\Domain\Project\NavigationLinkRepositoryInterface;
+use App\Domain\Project\PopupRepositoryInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Log\LoggerInterface;
 
@@ -14,16 +15,19 @@ class GetProjectEditorDataAction extends ProjectAction
 {
     private SlideRepositoryInterface $slideRepository;
     private NavigationLinkRepositoryInterface $navigationLinkRepository;
+    private PopupRepositoryInterface $popupRepository;
 
     public function __construct(
         LoggerInterface $logger,
         ProjectRepositoryInterface $projectRepository,
         SlideRepositoryInterface $slideRepository,
-        NavigationLinkRepositoryInterface $navigationLinkRepository
+        NavigationLinkRepositoryInterface $navigationLinkRepository,
+        PopupRepositoryInterface $popupRepository
     ) {
         parent::__construct($logger, $projectRepository);
         $this->slideRepository = $slideRepository;
         $this->navigationLinkRepository = $navigationLinkRepository;
+        $this->popupRepository = $popupRepository;
     }
 
     /**
@@ -45,11 +49,13 @@ class GetProjectEditorDataAction extends ProjectAction
 
         $slides = $this->slideRepository->findByProjectId($projectId);
         $links = $this->navigationLinkRepository->findByProjectId($projectId);
+        $popups = $this->popupRepository->findByProjectId($projectId);
 
         return $this->respondWithData([
             'project' => $project,
             'slides' => $slides,
-            'navigationLinks' => $links
+            'navigationLinks' => $links,
+            'popups' => $popups
         ]);
     }
 

@@ -16,5 +16,6 @@ return function (ContainerBuilder $containerBuilder) {
         ProjectRepositoryInterface::class => \DI\autowire(ProjectRepository::class),
         SlideRepositoryInterface::class => \DI\autowire(SlideRepository::class),
         \App\Domain\Project\NavigationLinkRepositoryInterface::class => \DI\autowire(\App\Infrastructure\Persistence\Project\NavigationLinkRepository::class),
+        \App\Domain\Project\PopupRepositoryInterface::class => \DI\autowire(\App\Infrastructure\Persistence\Project\PopupRepository::class),
     ]);
 };

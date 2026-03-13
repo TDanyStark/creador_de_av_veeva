@@ -59,8 +59,27 @@ export interface NavigationLink {
   heightPercent: number
 }
 
+export interface Popup {
+  id: number | null
+  slideId: number
+  imagePath: string | null
+  buttonTop: number
+  buttonLeft: number
+  buttonWidth: number
+  buttonHeight: number
+  popupTop: number
+  popupLeft: number
+  popupWidthPercent: number
+  popupHeightPercent: number
+  closeColor: string
+  closeXPosition: 'inside' | 'outside'
+  overlayType: 'dark' | 'light' | 'transparent'
+  exclusiveOpen: boolean
+}
+
 export interface EditorDataResponse {
   project: Project
   slides: Slide[]
   navigationLinks: NavigationLink[]
+  popups: Popup[]
 }

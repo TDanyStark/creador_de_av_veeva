@@ -1,12 +1,15 @@
-import { ChevronLeft, Layers, Save, Play } from 'lucide-react'
+import { ChevronLeft, Layers, Save, Play, Link as LinkIcon, Maximize2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { useNavigate } from 'react-router-dom'
+import { cn } from '@/lib/utils'
 
 interface EditorHeaderProps {
   projectName?: string
+  activeMode: 'navigation' | 'popup'
+  onModeChange: (mode: 'navigation' | 'popup') => void
 }
 
-export function EditorHeader({ projectName }: EditorHeaderProps) {
+export function EditorHeader({ projectName, activeMode, onModeChange }: EditorHeaderProps) {
   const navigate = useNavigate()
 
   return (
@@ -28,6 +31,40 @@ export function EditorHeader({ projectName }: EditorHeaderProps) {
           <span className="font-semibold text-surface-50">
             {projectName || 'Cargando proyecto...'}
           </span>
+        </div>
+
+        <div className="h-4 w-px bg-surface-800 mx-2" />
+        
+        {/* Mode Selector */}
+        <div className="flex items-center bg-surface-900 rounded-lg p-1 gap-1 ring-1 ring-white/5">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => onModeChange('navigation')}
+            className={cn(
+              "h-8 gap-2 px-3 text-xs font-semibold transition-all",
+              activeMode === 'navigation' 
+                ? "bg-brand-600 text-white shadow-lg" 
+                : "text-surface-400 hover:text-surface-200 hover:bg-surface-800"
+            )}
+          >
+            <LinkIcon className="h-3.5 w-3.5" />
+            Navegación
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => onModeChange('popup')}
+            className={cn(
+              "h-8 gap-2 px-3 text-xs font-semibold transition-all",
+              activeMode === 'popup' 
+                ? "bg-amber-600 text-white shadow-lg" 
+                : "text-surface-400 hover:text-surface-200 hover:bg-surface-800"
+            )}
+          >
+            <Maximize2 className="h-3.5 w-3.5" />
+            Popups
+          </Button>
         </div>
       </div>
 

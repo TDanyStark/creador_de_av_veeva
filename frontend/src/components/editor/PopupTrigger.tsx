@@ -1,16 +1,16 @@
 import { memo } from 'react'
-import type { NavigationLink } from '@/types/api'
+import type { Popup } from '@/types/api'
 import { cn } from '@/lib/utils'
-import { Link as LinkIcon } from 'lucide-react'
+import { Maximize2 } from 'lucide-react'
 
-interface HotspotProps {
-  link: NavigationLink
+interface PopupTriggerProps {
+  popup: Popup
   isSelected: boolean
   onClick: (e: React.MouseEvent) => void
   onMouseDown: (e: React.MouseEvent, type: 'move' | 'resize') => void
 }
 
-export const Hotspot = memo(function Hotspot({ link, isSelected, onClick, onMouseDown }: HotspotProps) {
+export const PopupTrigger = memo(function PopupTrigger({ popup, isSelected, onClick, onMouseDown }: PopupTriggerProps) {
   return (
     <div
       onClick={onClick}
@@ -21,26 +21,22 @@ export const Hotspot = memo(function Hotspot({ link, isSelected, onClick, onMous
       className={cn(
         "absolute flex items-center justify-center cursor-move group",
         isSelected 
-          ? "bg-brand-500/20 ring-2 ring-brand-500 z-20 shadow-xl shadow-brand-500/20" 
-          : "bg-brand-500/10 border border-brand-500/40 z-10 hover:bg-brand-500/20"
+          ? "bg-amber-500/20 ring-2 ring-amber-500 z-30 shadow-xl shadow-amber-500/20" 
+          : "bg-amber-500/10 border border-amber-500/40 z-20 hover:bg-amber-500/20"
       )}
       style={{
-        top: `${link.topPercent}%`,
-        left: `${link.leftPercent}%`,
-        width: `${link.widthPercent}%`,
-        height: `${link.heightPercent}%`,
+        top: `${popup.buttonTop}%`,
+        left: `${popup.buttonLeft}%`,
+        width: `${popup.buttonWidth}%`,
+        height: `${popup.buttonHeight}%`,
       }}
     >
       <div className={cn(
         "text-white flex items-center gap-1.5 pointer-events-none drop-shadow-md",
         isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100 transition-opacity"
       )}>
-        <LinkIcon className="h-4 w-4" />
-        {link.targetSlideId ? (
-            <span className="text-[10px] font-bold uppercase tracking-wide">Veeva Link</span>
-        ) : (
-            <span className="text-[10px] font-bold uppercase tracking-wide text-brand-200">Sin destino</span>
-        )}
+        <Maximize2 className="h-4 w-4" />
+        <span className="text-[10px] font-bold uppercase tracking-wide">Popup Link</span>
       </div>
 
       {/* Resize Handle */}
@@ -52,7 +48,7 @@ export const Hotspot = memo(function Hotspot({ link, isSelected, onClick, onMous
           }}
           className="absolute bottom-0 right-0 w-4 h-4 cursor-nwse-resize flex items-center justify-center pointer-events-auto"
         >
-          <div className="w-2 h-2 bg-brand-500 rounded-sm" />
+          <div className="w-2 h-2 bg-amber-500 rounded-sm" />
         </div>
       )}
     </div>

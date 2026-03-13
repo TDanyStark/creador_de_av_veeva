@@ -6,7 +6,7 @@ import { EditorHeader } from '@/components/editor/EditorHeader'
 import { SlideListSidebar } from '@/components/editor/SlideListSidebar'
 import { PropertiesSidebar } from '@/components/editor/PropertiesSidebar'
 import { CanvasWorkspace } from '@/components/editor/CanvasWorkspace'
-import type { EditorDataResponse, NavigationLink } from '@/types/api'
+import type { EditorDataResponse, NavigationLink, Popup } from '@/types/api'
 import { toast } from 'sonner'
 
 export function EditorPage() {
@@ -16,6 +16,9 @@ export function EditorPage() {
   
   const currentSlideIdFromUrl = searchParams.get('slide') ? parseInt(searchParams.get('slide')!) : null
   const [selectedLinkId, setSelectedLinkId] = useState<number | null | string>(null)
+  const [selectedPopupId, setSelectedPopupId] = useState<number | null | string>(null)
+  const [activeMode, setActiveMode] = useState<'navigation' | 'popup'>('navigation')
+  const [isPreviewVisible, setIsPreviewVisible] = useState(false)
 
   const { data, isLoading } = useQuery<EditorDataResponse>({
     queryKey: ['editor-data', id],
@@ -28,6 +31,7 @@ export function EditorPage() {
 
   const slides = data?.slides || []
   const links = data?.navigationLinks || []
+  const popups = data?.popups || []
   const project = data?.project
 
   const currentSlide = slides.find(s => s.id === currentSlideIdFromUrl) || slides[0] || null
@@ -58,6 +62,39 @@ export function EditorPage() {
       queryClient.invalidateQueries({ queryKey: ['editor-data', id] })
       setSelectedLinkId(null)
       toast.success('Enlace eliminado')
+    }
+  })
+
+  const savePopupMutation = useMutation({
+    mutationFn: async ({ popup, image }: { popup: Partial<Popup>, image?: File }) => {
+      const formData = new FormData()
+      Object.entries(popup).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) formData.append(key, value.toString())
+      })
+      if (image) {
+        formData.append('image', image)
+      }
+
+      const { data } = await apiClient.post(`/slides/${popup.slideId}/popups`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      return data.data
+    },
+    onSuccess: (savedPopup) => {
+      queryClient.invalidateQueries({ queryKey: ['editor-data', id] })
+      setSelectedPopupId(savedPopup.id)
+      toast.success('Popup guardado')
+    }
+  })
+
+  const deletePopupMutation = useMutation({
+    mutationFn: async (popupId: number) => {
+      await apiClient.delete(`/popups/${popupId}`)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['editor-data', id] })
+      setSelectedPopupId(null)
+      toast.success('Popup eliminado')
     }
   })
 
@@ -93,9 +130,21 @@ export function EditorPage() {
   const handleSelectSlide = (slideId: number) => {
     setSearchParams({ slide: slideId.toString() })
     setSelectedLinkId(null)
+    setSelectedPopupId(null)
+  }
+
+  const handleUpdatePopup = (popupId: number | string, updates: Partial<Popup>) => {
+    queryClient.setQueryData(['editor-data', id], (old: EditorDataResponse | undefined) => {
+      if (!old) return old
+      return {
+        ...old,
+        popups: old.popups.map(p => p.id === popupId ? { ...p, ...updates } : p)
+      }
+    })
   }
 
   const selectedLink = links.find(l => l.id === selectedLinkId) || null
+  const selectedPopup = popups.find(p => p.id === selectedPopupId) || null
 
   if (isLoading) {
     return (
@@ -110,7 +159,16 @@ export function EditorPage() {
 
   return (
     <div className="flex h-screen flex-col bg-surface-950 text-surface-50 overflow-hidden">
-      <EditorHeader projectName={project?.name} />
+      <EditorHeader 
+        projectName={project?.name} 
+        activeMode={activeMode}
+        onModeChange={(mode) => {
+          setActiveMode(mode)
+          setSelectedLinkId(null)
+          setSelectedPopupId(null)
+          setIsPreviewVisible(false)
+        }}
+      />
       
       <div className="flex flex-1 overflow-hidden">
         <SlideListSidebar 
@@ -121,18 +179,32 @@ export function EditorPage() {
         
         <CanvasWorkspace 
           currentSlide={currentSlide}
+          activeMode={activeMode}
           links={links.filter(l => l.slideId === currentSlide?.id)}
           selectedLinkId={selectedLinkId}
           onSelectLink={setSelectedLinkId}
           onAddLink={handleAddLink}
           onUpdateLink={handleUpdateLink}
+          popups={popups.filter(p => p.slideId === currentSlide?.id)}
+          selectedPopupId={selectedPopupId}
+          onSelectPopup={(id) => { setSelectedPopupId(id); setIsPreviewVisible(false); }}
+          onAddPopup={(newPopup) => savePopupMutation.mutate({ popup: newPopup })}
+          onUpdatePopup={handleUpdatePopup}
+          onSavePopup={(popup, image) => savePopupMutation.mutate({ popup, image })}
+          isPreviewVisible={isPreviewVisible}
         />
         
         <PropertiesSidebar 
           selectedLink={selectedLink}
+          selectedPopup={selectedPopup}
           slides={slides}
           onUpdateLink={(updates) => selectedLinkId && typeof selectedLinkId === 'number' && handleUpdateLink(selectedLinkId, updates)}
           onDeleteLink={(linkId) => deleteMutation.mutate(linkId)}
+          onUpdatePopup={(updates) => selectedPopupId && (typeof selectedPopupId === 'number' || selectedPopupId === 'temp') && handleUpdatePopup(selectedPopupId, updates)}
+          onSavePopup={(updates, image) => selectedPopupId && (typeof selectedPopupId === 'number' || selectedPopupId === 'temp') && savePopupMutation.mutate({ popup: { ...selectedPopup!, ...updates }, image })}
+          onDeletePopup={(popupId) => deletePopupMutation.mutate(popupId)}
+          isPreviewVisible={isPreviewVisible}
+          onTogglePreview={() => setIsPreviewVisible(prev => !prev)}
         />
       </div>
     </div>
