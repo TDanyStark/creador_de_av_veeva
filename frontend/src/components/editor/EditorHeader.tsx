@@ -1,5 +1,5 @@
 import { ChevronLeft, Layers, Save, Play, Link as LinkIcon, Maximize2 } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 

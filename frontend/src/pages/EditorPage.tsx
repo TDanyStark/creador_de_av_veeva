@@ -20,6 +20,7 @@ export function EditorPage() {
   const [activeMode, setActiveMode] = useState<'navigation' | 'popup'>('navigation')
   const [isPreviewVisible, setIsPreviewVisible] = useState(false)
   const [clipboard, setClipboard] = useState<{ type: 'navigation' | 'popup', data: any } | null>(null)
+  const [version, setVersion] = useState(0)
 
   const { data, isLoading } = useQuery<EditorDataResponse>({
     queryKey: ['editor-data', id],
@@ -226,6 +227,48 @@ export function EditorPage() {
     }
   })
 
+  const deleteSlideMutation = useMutation({
+    mutationFn: async (slideId: number) => {
+      await apiClient.delete(`/slides/${slideId}`)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['editor-data', id] })
+      setVersion(v => v + 1)
+      toast.success('Slide eliminado correctamente')
+      // If the current slide was deleted, redirect to the first available slide
+      const remainingSlides = slides.filter(s => s.id !== currentSlideIdFromUrl)
+      if (remainingSlides.length > 0) {
+        setSearchParams({ slide: remainingSlides[0].id.toString() })
+      }
+    }
+  })
+
+  const reorderSlidesMutation = useMutation({
+    mutationFn: async (newOrderIds: number[]) => {
+      await apiClient.patch(`/projects/${id}/slides/reorder`, { order: newOrderIds })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['editor-data', id] })
+      setVersion(v => v + 1)
+      toast.success('Orden actualizado')
+    }
+  })
+
+  const addSlidesMutation = useMutation({
+    mutationFn: async (files: File[]) => {
+      const formData = new FormData()
+      files.forEach(file => formData.append('slides[]', file))
+      await apiClient.post(`/projects/${id}/slides`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['editor-data', id] })
+      setVersion(v => v + 1)
+      toast.success('Slides añadidos correctamente')
+    }
+  })
+
   if (isLoading) {
     return (
         <div className="flex h-screen w-full items-center justify-center bg-surface-950">
@@ -255,6 +298,10 @@ export function EditorPage() {
           slides={slides} 
           currentSlideId={currentSlide?.id || null} 
           onSelectSlide={handleSelectSlide}
+          onDeleteSlide={(slideId: number) => deleteSlideMutation.mutate(slideId)}
+          onReorderSlides={(newOrder: number[]) => reorderSlidesMutation.mutate(newOrder)}
+          onAddSlides={(files: File[]) => addSlidesMutation.mutate(files)}
+          version={version}
         />
         
         <CanvasWorkspace 
@@ -285,6 +332,7 @@ export function EditorPage() {
           onUpdatePopup={handleUpdatePopup}
           onSavePopup={(popup, image) => savePopupMutation.mutate({ popup, image })}
           isPreviewVisible={isPreviewVisible}
+          version={version}
         />
         
         <PropertiesSidebar 

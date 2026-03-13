@@ -1,6 +1,6 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calendar, FileText, ChevronRight } from 'lucide-react'
-import { buttonVariants } from '@/components/ui/Button'
+import { buttonVariants } from '@/components/ui/button'
 import { Link } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 

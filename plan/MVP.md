@@ -98,7 +98,7 @@
 
 ---
 
-## Fase 5: Gestión Avanzada de Slides (CRUD, Reordenamiento y Limpieza)
+## Fase 5: Gestión Avanzada de Slides (CRUD, Reordenamiento y Limpieza) [x]
 **Objetivo:** Flexibilidad total para modificar la estructura del proyecto después de la carga inicial.
 
 ### 5.1 Backend

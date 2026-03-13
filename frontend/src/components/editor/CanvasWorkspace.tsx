@@ -21,7 +21,9 @@ interface CanvasWorkspaceProps {
   onUpdatePopup: (id: number | string, updates: Partial<Popup>) => void
   onSavePopup: (popup: Partial<Popup>, image?: File) => void
   isPreviewVisible: boolean
+  version: number
 }
+
 
 type DragType = 'move-link' | 'resize-link' | 'move-trigger' | 'resize-trigger' | 'move-content' | 'resize-content'
 
@@ -38,7 +40,8 @@ export function CanvasWorkspace({
   onSelectPopup,
   onAddPopup,
   onUpdatePopup,
-  isPreviewVisible
+  isPreviewVisible,
+  version
 }: CanvasWorkspaceProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [isDrawing, setIsDrawing] = useState(false)
@@ -209,7 +212,7 @@ export function CanvasWorkspace({
         style={{ width: '100%', maxWidth: '1024px', aspectRatio: '1024 / 768' }}
       >
         <img 
-          src={`${import.meta.env.VITE_API_URL || ''}/${currentSlide.imagePath}`} 
+          src={`${import.meta.env.VITE_API_URL || ''}/${currentSlide.imagePath}?v=${version}`} 
           alt="Current Slide"
           className="h-full w-full object-contain pointer-events-none"
         />

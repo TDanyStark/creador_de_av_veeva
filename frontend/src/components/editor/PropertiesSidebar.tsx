@@ -1,6 +1,6 @@
 import type { Slide, NavigationLink, Popup } from '@/types/api'
 import { Trash2, Link as LinkIcon, Maximize2, Upload, Check, Eye, EyeOff, Copy } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 import {

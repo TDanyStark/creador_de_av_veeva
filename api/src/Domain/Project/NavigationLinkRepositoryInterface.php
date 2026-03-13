@@ -23,4 +23,9 @@ interface NavigationLinkRepositoryInterface
     public function delete(int $id): void;
     
     public function findById(int $id): ?NavigationLink;
+
+    public function deleteBySlideId(int $slideId): void;
+
+    public function deleteByTargetSlideId(int $targetSlideId): void;
 }
+

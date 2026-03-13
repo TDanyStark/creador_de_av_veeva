@@ -40,6 +40,25 @@ class SlideRepository implements SlideRepositoryInterface
         return $slides;
     }
 
+    public function findById(int $id): ?Slide
+    {
+        $stmt = $this->connection->prepare("SELECT * FROM slides WHERE id = :id");
+        $stmt->execute([':id' => $id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row) {
+            return null;
+        }
+
+        return new Slide(
+            (int)$row['id'],
+            (int)$row['project_id'],
+            (int)$row['slide_number'],
+            $row['image_path'],
+            $row['created_at']
+        );
+    }
+
     public function save(Slide $slide): Slide
     {
         $stmt = $this->connection->prepare("
@@ -66,4 +85,25 @@ class SlideRepository implements SlideRepositoryInterface
             $row['created_at']
         );
     }
+
+    public function update(Slide $slide): void
+    {
+        $stmt = $this->connection->prepare("
+            UPDATE slides 
+            SET slide_number = :slide_number, image_path = :image_path 
+            WHERE id = :id
+        ");
+        $stmt->execute([
+            ':slide_number' => $slide->getSlideNumber(),
+            ':image_path' => $slide->getImagePath(),
+            ':id' => $slide->getId(),
+        ]);
+    }
+
+    public function delete(int $id): void
+    {
+        $stmt = $this->connection->prepare("DELETE FROM slides WHERE id = :id");
+        $stmt->execute([':id' => $id]);
+    }
 }
+

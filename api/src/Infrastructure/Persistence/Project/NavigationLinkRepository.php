@@ -113,6 +113,19 @@ class NavigationLinkRepository implements NavigationLinkRepositoryInterface
         return $this->mapToEntity($row);
     }
 
+    public function deleteBySlideId(int $slideId): void
+    {
+        $stmt = $this->connection->prepare("DELETE FROM navigation_links WHERE slide_id = :slide_id");
+        $stmt->execute([':slide_id' => $slideId]);
+    }
+
+    public function deleteByTargetSlideId(int $targetSlideId): void
+    {
+        $stmt = $this->connection->prepare("DELETE FROM navigation_links WHERE target_slide_id = :target_slide_id");
+        $stmt->execute([':target_slide_id' => $targetSlideId]);
+    }
+
+
     private function mapToEntity(array $row): NavigationLink
     {
         return new NavigationLink(

@@ -48,6 +48,17 @@ class Slide implements JsonSerializable
         return $this->imagePath;
     }
 
+    public function setSlideNumber(int $slideNumber): void
+    {
+        $this->slideNumber = $slideNumber;
+    }
+
+    public function setImagePath(string $imagePath): void
+    {
+        $this->imagePath = $imagePath;
+    }
+
+
     #[\ReturnTypeWillChange]
     public function jsonSerialize(): array
     {

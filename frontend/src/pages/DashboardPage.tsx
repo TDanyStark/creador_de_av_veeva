@@ -1,6 +1,6 @@
 import { useAuthStore } from '@/store/useAuthStore'
 import { Layers, LogOut } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
+import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import apiClient from '@/lib/axios'

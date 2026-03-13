@@ -16,6 +16,9 @@ use \App\Application\Actions\Slide\SaveNavigationLinkAction;
 use \App\Application\Actions\Slide\DeleteNavigationLinkAction;
 use \App\Application\Actions\Slide\SavePopupAction;
 use \App\Application\Actions\Slide\DeletePopupAction;
+use \App\Application\Actions\Project\AddSlidesAction;
+use \App\Application\Actions\Project\ReorderSlidesAction;
+use \App\Application\Actions\Slide\DeleteSlideAction;
 
 
 return function (App $app) {
@@ -59,10 +62,13 @@ return function (App $app) {
                 $group->get('', ListProjectsAction::class);
                 $group->post('', CreateProjectAction::class);
                 $group->get('/{id}/editor-data', GetProjectEditorDataAction::class);
+                $group->post('/{id}/slides', AddSlidesAction::class);
+                $group->patch('/{id}/slides/reorder', ReorderSlidesAction::class);
             })->add(JwtAuthMiddleware::class);
 
             // Slides & Navigation
             $group->group('/slides', function (Group $group) {
+                $group->delete('/{id}', DeleteSlideAction::class);
                 $group->post('/{id}/navigation', SaveNavigationLinkAction::class);
                 $group->post('/{id}/popups', SavePopupAction::class);
             })->add(JwtAuthMiddleware::class);
