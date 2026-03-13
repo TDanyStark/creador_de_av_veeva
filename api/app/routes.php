@@ -57,11 +57,13 @@ return function (App $app) {
                 $group->get('/me', MeAction::class)->add(JwtAuthMiddleware::class);
             });
 
-            // Projects
+            // Public Projects Data
+            $group->get('/projects/{id}/editor-data', GetProjectEditorDataAction::class);
+
+            // Protected Projects
             $group->group('/projects', function (Group $group) {
                 $group->get('', ListProjectsAction::class);
                 $group->post('', CreateProjectAction::class);
-                $group->get('/{id}/editor-data', GetProjectEditorDataAction::class);
                 $group->post('/{id}/slides', AddSlidesAction::class);
                 $group->patch('/{id}/slides/reorder', ReorderSlidesAction::class);
                 $group->post('/{id}/export', ExportProjectAction::class);

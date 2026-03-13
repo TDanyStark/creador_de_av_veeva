@@ -15,12 +15,12 @@ function App() {
         <Routes>
           {/* Public */}
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/preview/:id" element={<PreviewPage />} />
 
           {/* Private */}
           <Route element={<PrivateRoute />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/editor/:id" element={<EditorPage />} />
-            <Route path="/preview/:id" element={<PreviewPage />} />
           </Route>
 
           {/* Fallback */}

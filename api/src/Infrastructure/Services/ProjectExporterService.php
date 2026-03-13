@@ -53,7 +53,7 @@ class ProjectExporterService
             mkdir($slideDir . '/images', 0755, true);
 
             // Copy base slide image
-            $sourceImagePath = $this->publicDir . $slide['image_path'];
+            $sourceImagePath = rtrim($this->publicDir, '/') . '/' . ltrim($slide['imagePath'] ?? $slide['image_path'], '/');
             $distImagePath = $slideDir . '/images/bg.jpg';
             if (file_exists($sourceImagePath)) {
                 copy($sourceImagePath, $distImagePath);
@@ -79,7 +79,7 @@ class ProjectExporterService
 
             // Also copy popup images
             foreach ($slidePopups as $popup) {
-                $popupImgPath = $this->publicDir . $popup['imagePath'];
+                $popupImgPath = rtrim($this->publicDir, '/') . '/' . ltrim($popup['imagePath'], '/');
                 $popupFilename = basename($popupImgPath);
                 $distPopupPath = $slideDir . '/images/' . $popupFilename;
                 if (file_exists($popupImgPath)) {
@@ -94,7 +94,7 @@ class ProjectExporterService
 
             // Zip the slide
             $slideZipPath = $tempDir . '/' . $slideName . '.zip';
-            $this->zipDirectory($slideDir, $slideZipPath, $slideName);
+            $this->zipDirectory($slideDir, $slideZipPath);
             $slideZips[] = $slideZipPath;
         }
 
@@ -123,15 +123,20 @@ class ProjectExporterService
     private function generateHtml(string $slideName, array $links, array $popups): string
     {
         $html = '<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>' . htmlspecialchars($slideName) . '</title>
-    <link rel="stylesheet" href="css/styles.css">
-</head>
-<body>
-    <div id="container">';
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
+        <meta name="format-detection" content="telephone=no"/>
+        <meta name="apple-mobile-web-app-capable" content="yes"/>
+        <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+        <title>' . htmlspecialchars($slideName) . '</title>
+        <link rel="stylesheet" type="text/css" media="screen" href="css/styles.css" />
+        <script src="js/main.js"></script>
+    </head>
+    <body >
+        <div id="container">';
 
         // Links
         foreach ($links as $link) {
@@ -290,20 +295,22 @@ class ProjectExporterService
         }
     }
 
-    private function zipDirectory(string $sourceDir, string $outZipPath, string $baseFolder): void
+    private function zipDirectory(string $sourceDir, string $outZipPath): void
     {
         $zip = new ZipArchive();
         if ($zip->open($outZipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
             $files = new \RecursiveIteratorIterator(
-                new \RecursiveDirectoryIterator($sourceDir),
+                new \RecursiveDirectoryIterator($sourceDir, \RecursiveDirectoryIterator::SKIP_DOTS),
                 \RecursiveIteratorIterator::LEAVES_ONLY
             );
+
+            $sourceDirNormalized = rtrim(str_replace('\\', '/', realpath($sourceDir)), '/');
 
             foreach ($files as $name => $file) {
                 if (!$file->isDir()) {
                     $filePath = $file->getRealPath();
-                    $relativePath = $baseFolder . '/' . substr($filePath, strlen($sourceDir) + 1);
-                    $relativePath = str_replace('\\', '/', $relativePath); // windows compat
+                    $filePathNormalized = str_replace('\\', '/', $filePath);
+                    $relativePath = ltrim(str_replace($sourceDirNormalized, '', $filePathNormalized), '/');
                     $zip->addFile($filePath, $relativePath);
                 }
             }

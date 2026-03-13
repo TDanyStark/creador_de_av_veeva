@@ -49,10 +49,38 @@ export function EditorPage() {
       const { data } = await apiClient.post(`/slides/${link.slideId}/navigation`, link)
       return data.data
     },
+    onMutate: async (newLink) => {
+      await queryClient.cancelQueries({ queryKey: ['editor-data', id] })
+      const previousData = queryClient.getQueryData<EditorDataResponse>(['editor-data', id])
+      
+      queryClient.setQueryData(['editor-data', id], (old: EditorDataResponse | undefined) => {
+        if (!old) return old
+        const exists = old.navigationLinks.some(l => l.id !== null && l.id == newLink.id)
+        return {
+          ...old,
+          navigationLinks: exists
+            ? old.navigationLinks.map(l => l.id !== null && l.id == newLink.id ? { ...l, ...newLink } : l)
+            : [...old.navigationLinks, { ...newLink, id: newLink.id || 'temp' }]
+        }
+      })
+      return { previousData }
+    },
+    onError: (_err, _newLink, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(['editor-data', id], context.previousData)
+      }
+    },
     onSuccess: (savedLink) => {
-      queryClient.invalidateQueries({ queryKey: ['editor-data', id] })
+      queryClient.setQueryData(['editor-data', id], (old: EditorDataResponse | undefined) => {
+        if (!old) return old
+        return {
+          ...old,
+          navigationLinks: old.navigationLinks.map(l => 
+            (l.id !== null && savedLink.id !== null && l.id == savedLink.id) || (l.id === 'temp' && savedLink.id === null) ? savedLink : l
+          )
+        }
+      })
       if (savedLink.id) setSelectedLinkId(savedLink.id)
-      // toast.success('Enlace guardado correctamente') // Removed to avoid too many toasts on auto-save
     }
   })
 
@@ -82,10 +110,38 @@ export function EditorPage() {
       })
       return data.data
     },
+    onMutate: async ({ popup }) => {
+      await queryClient.cancelQueries({ queryKey: ['editor-data', id] })
+      const previousData = queryClient.getQueryData<EditorDataResponse>(['editor-data', id])
+
+      queryClient.setQueryData(['editor-data', id], (old: EditorDataResponse | undefined) => {
+        if (!old) return old
+        const exists = old.popups.some(p => p.id !== null && p.id == popup.id)
+        return {
+          ...old,
+          popups: exists
+            ? old.popups.map(p => p.id !== null && p.id == popup.id ? { ...p, ...popup } : p)
+            : [...old.popups, { ...popup, id: popup.id || 'temp' } as Popup]
+        }
+      })
+      return { previousData }
+    },
+    onError: (_err, _variables, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(['editor-data', id], context.previousData)
+      }
+    },
     onSuccess: (savedPopup) => {
-      queryClient.invalidateQueries({ queryKey: ['editor-data', id] })
+      queryClient.setQueryData(['editor-data', id], (old: EditorDataResponse | undefined) => {
+        if (!old) return old
+        return {
+          ...old,
+          popups: old.popups.map(p => 
+            (p.id !== null && savedPopup.id !== null && p.id == savedPopup.id) || (p.id === 'temp' && savedPopup.id === null) ? savedPopup : p
+          )
+        }
+      })
       if (savedPopup.id) setSelectedPopupId(savedPopup.id)
-      // toast.success('Popup guardado')
     }
   })
 
@@ -147,16 +203,8 @@ export function EditorPage() {
   }, [selectedLinkId, selectedPopupId, links, popups, clipboard, currentSlide])
 
   const handleUpdateLink = (linkId: number | string, updates: Partial<NavigationLink>) => {
-    queryClient.setQueryData(['editor-data', id], (old: EditorDataResponse | undefined) => {
-        if (!old) return old
-        return {
-            ...old,
-            navigationLinks: old.navigationLinks.map(link => 
-                link.id === linkId ? { ...link, ...updates } : link
-            )
-        }
-    })
-
+    // We don't cancel queries here anymore as saveMutation.mutate handles it
+    // to avoid race conditions between setQueryData calls
     if (typeof linkId === 'number') {
         const link = links.find(l => l.id === linkId)
         if (link) {
@@ -166,14 +214,6 @@ export function EditorPage() {
   }
 
   const handleUpdatePopup = (popupId: number | string, updates: Partial<Popup>) => {
-    queryClient.setQueryData(['editor-data', id], (old: EditorDataResponse | undefined) => {
-      if (!old) return old
-      return {
-        ...old,
-        popups: old.popups.map(p => p.id === popupId ? { ...p, ...updates } : p)
-      }
-    })
-
     if (typeof popupId === 'number') {
         const popup = popups.find(p => p.id === popupId)
         if (popup) {
