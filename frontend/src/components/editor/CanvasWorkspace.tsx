@@ -24,7 +24,6 @@ interface CanvasWorkspaceProps {
   version: number
 }
 
-
 type DragType = 'move-link' | 'resize-link' | 'move-trigger' | 'resize-trigger' | 'move-content' | 'resize-content'
 
 export function CanvasWorkspace({ 
@@ -48,7 +47,10 @@ export function CanvasWorkspace({
   const [drawStart, setDrawStart] = useState({ x: 0, y: 0 })
   const [currentMouse, setCurrentMouse] = useState({ x: 0, y: 0 })
   
-  // Local state for dragging to eliminate lag
+  // Drag state: tracks the current drag operation.
+  // onUpdateLink/onUpdatePopup now update local state in the parent INSTANTLY
+  // (no API round-trip before re-render), so we only need the drag delta for
+  // smooth live feedback while the mouse is held down.
   const [localDrag, setLocalDrag] = useState<{
     type: DragType
     startX: number
@@ -132,6 +134,7 @@ export function CanvasWorkspace({
                 widthPercent: Math.max(1, Math.min(100 - link.leftPercent, link.widthPercent + dx)),
                 heightPercent: Math.max(1, Math.min(100 - link.topPercent, link.heightPercent + dy)),
             }
+            // This now instantly updates the parent's local state — no API flash
             onUpdateLink(selectedLinkId!, updates)
         } else if (localDrag.type.startsWith('move-trigger') || localDrag.type.startsWith('resize-trigger')) {
             const popup = localDrag.initialItem as Popup
@@ -170,6 +173,9 @@ export function CanvasWorkspace({
     }
   }, [isDrawing, localDrag])
 
+  // During an active drag, compute the live visual position from the initial snapshot + delta.
+  // Once mouseUp fires and onUpdateLink/Popup is called, the parent's state is already updated
+  // so localDrag becomes null WITHOUT a flash — the props already have the new values.
   const displayItems = useMemo(() => {
     const dx = localDrag ? localDrag.currentX - localDrag.startX : 0
     const dy = localDrag ? localDrag.currentY - localDrag.startY : 0
@@ -177,9 +183,9 @@ export function CanvasWorkspace({
     const processedLinks = links.map(link => {
       if (localDrag && (localDrag.type === 'move-link' || localDrag.type === 'resize-link') && (link.id == selectedLinkId || (link.id === null && selectedLinkId === 'temp'))) {
         if (localDrag.type === 'move-link') {
-            return { ...link, leftPercent: link.leftPercent + dx, topPercent: link.topPercent + dy }
+            return { ...link, leftPercent: (localDrag.initialItem as NavigationLink).leftPercent + dx, topPercent: (localDrag.initialItem as NavigationLink).topPercent + dy }
         } else {
-            return { ...link, widthPercent: link.widthPercent + dx, heightPercent: link.heightPercent + dy }
+            return { ...link, widthPercent: (localDrag.initialItem as NavigationLink).widthPercent + dx, heightPercent: (localDrag.initialItem as NavigationLink).heightPercent + dy }
         }
       }
       return link
@@ -187,10 +193,11 @@ export function CanvasWorkspace({
 
     const processedPopups = popups.map(popup => {
       if (localDrag && (popup.id == selectedPopupId || (popup.id === null && selectedPopupId === 'temp'))) {
-        if (localDrag.type === 'move-trigger') return { ...popup, buttonLeft: popup.buttonLeft + dx, buttonTop: popup.buttonTop + dy }
-        if (localDrag.type === 'resize-trigger') return { ...popup, buttonWidth: popup.buttonWidth + dx, buttonHeight: popup.buttonHeight + dy }
-        if (localDrag.type === 'move-content') return { ...popup, popupLeft: popup.popupLeft + dx, popupTop: popup.popupTop + dy }
-        if (localDrag.type === 'resize-content') return { ...popup, popupWidthPercent: popup.popupWidthPercent + dx, popupHeightPercent: popup.popupHeightPercent + dy }
+        const initial = localDrag.initialItem as Popup
+        if (localDrag.type === 'move-trigger') return { ...popup, buttonLeft: initial.buttonLeft + dx, buttonTop: initial.buttonTop + dy }
+        if (localDrag.type === 'resize-trigger') return { ...popup, buttonWidth: initial.buttonWidth + dx, buttonHeight: initial.buttonHeight + dy }
+        if (localDrag.type === 'move-content') return { ...popup, popupLeft: initial.popupLeft + dx, popupTop: initial.popupTop + dy }
+        if (localDrag.type === 'resize-content') return { ...popup, popupWidthPercent: initial.popupWidthPercent + dx, popupHeightPercent: initial.popupHeightPercent + dy }
       }
       return popup
     })
