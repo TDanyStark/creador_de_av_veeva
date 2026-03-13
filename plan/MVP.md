@@ -98,10 +98,32 @@
 
 ---
 
-## Fase 5: Preview (Motor Veeva Web)
+## Fase 5: Gestión Avanzada de Slides (CRUD, Reordenamiento y Limpieza)
+**Objetivo:** Flexibilidad total para modificar la estructura del proyecto después de la carga inicial.
+
+### 5.1 Backend
+* **Endpoints CRUD Slides:**
+    * `POST /api/projects/{id}/slides`: Permitir subir una o varias imágenes nuevas. Procesar y asignar `slide_number` correlativo.
+    * `DELETE /api/slides/{id}`: Eliminar el registro, el archivo físico y **limpieza en cascada** (navigation links donde sea origen o destino, y popups asociados con sus imágenes).
+    * `PATCH /api/projects/{id}/slides/reorder`: Recibir array de IDs en el nuevo orden. Actualizar `slide_number` y renombrar archivos físicos para mantener la secuencia `slide_01.jpg`, `slide_02.jpg`, etc.
+* **Lógica de Integridad:**
+    * Al borrar un slide, actualizar los `target_slide_id` de otros links si es necesario (o marcarlos como rotos/eliminar).
+    * Al reordenar, disparar un proceso que renombre los archivos en disco y actualice `image_path` en la BD para evitar saltos en la secuencia de nombres.
+
+### 5.2 Frontend
+* **SlideListSidebar Mejorado:**
+    * Implementar Drag & Drop (usando `@dnd-kit/core` o similar) para reordenar las miniaturas.
+    * Botón de eliminación con confirmación (`AlertDialog`) en cada slide.
+    * Zona de carga o botón "Añadir Slide" para subir nuevas imágenes al final del proyecto.
+* **Estado e Integridad:**
+    * Actualizar el `SlideStore` o refetch de TanStack Query tras cambios estructurales para reflejar el nuevo orden y nombres inmediatamente.
+
+---
+
+## Fase 6: Preview (Motor Veeva Web)
 **Objetivo:** Visor web que emula el iPad. Todo local en React antes de generar el ZIP.
 
-### 5.1 Frontend
+### 6.1 Frontend
 * **Vista Compartida:**
     * Ruta `src/pages/Preview.tsx` (pantalla completa, sin barras laterales).
 * **Lógica de Renderizado:**
@@ -114,10 +136,10 @@
 
 ---
 
-## Fase 6: Empaquetador y Motor de Plantillas ZIP
+## Fase 7: Empaquetador y Motor de Plantillas ZIP
 **Objetivo:** El core del negocio. Convertir la data estructurada en los assets físicos de Veeva.
 
-### 6.1 Backend
+### 7.1 Backend
 * **Motor de Exportación (`POST /api/projects/{id}/export`):**
     * **HTML Generator:** Función que lee los datos del slide e inyecta las etiquetas (`<a>`, `<button>`, `<img>`) en un template `index.html`.
     * **CSS Generator:** Crea `css/styles.css` por slide, usando los porcentajes guardados en la BD para posicionar absolutamente cada elemento. Añade estilos dinámicos del overlay.
@@ -128,7 +150,7 @@
     * Empaquetar todos los `slide_XX.zip` en un `Master_Project.zip`.
     * Devolver el binario o una URL firmada de descarga temporal.
 
-### 6.2 Frontend
+### 7.2 Frontend
 * **Consumo y Descarga:**
     * Componente `ExportButton.tsx` en el Editor Header.
     * Usar TanStack Mutation para enviar la petición, recibir el Blob (`responseType: 'blob'`), e invocar la descarga del navegador. Notificaciones (Toast) de progreso.

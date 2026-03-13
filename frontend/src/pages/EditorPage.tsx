@@ -19,6 +19,7 @@ export function EditorPage() {
   const [selectedPopupId, setSelectedPopupId] = useState<number | null | string>(null)
   const [activeMode, setActiveMode] = useState<'navigation' | 'popup'>('navigation')
   const [isPreviewVisible, setIsPreviewVisible] = useState(false)
+  const [clipboard, setClipboard] = useState<{ type: 'navigation' | 'popup', data: any } | null>(null)
 
   const { data, isLoading } = useQuery<EditorDataResponse>({
     queryKey: ['editor-data', id],
@@ -29,7 +30,7 @@ export function EditorPage() {
     enabled: !!id,
   })
 
-  const slides = data?.slides || []
+  const slides = [...(data?.slides || [])].sort((a, b) => a.slideNumber - b.slideNumber)
   const links = data?.navigationLinks || []
   const popups = data?.popups || []
   const project = data?.project
@@ -49,8 +50,8 @@ export function EditorPage() {
     },
     onSuccess: (savedLink) => {
       queryClient.invalidateQueries({ queryKey: ['editor-data', id] })
-      setSelectedLinkId(savedLink.id)
-      toast.success('Enlace guardado correctamente')
+      if (savedLink.id) setSelectedLinkId(savedLink.id)
+      // toast.success('Enlace guardado correctamente') // Removed to avoid too many toasts on auto-save
     }
   })
 
@@ -82,8 +83,8 @@ export function EditorPage() {
     },
     onSuccess: (savedPopup) => {
       queryClient.invalidateQueries({ queryKey: ['editor-data', id] })
-      setSelectedPopupId(savedPopup.id)
-      toast.success('Popup guardado')
+      if (savedPopup.id) setSelectedPopupId(savedPopup.id)
+      // toast.success('Popup guardado')
     }
   })
 
@@ -98,12 +99,53 @@ export function EditorPage() {
     }
   })
 
+  // Keybinds for Copy/Paste
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Check if user is typing in an input
+      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) return
+
+      if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+        const selectedLink = links.find(l => l.id === selectedLinkId)
+        const selectedPopup = popups.find(p => p.id === selectedPopupId)
+        
+        if (selectedLink) {
+          setClipboard({ type: 'navigation', data: { ...selectedLink, id: null } })
+          toast.info('Navegación copiada')
+        } else if (selectedPopup) {
+          setClipboard({ type: 'popup', data: { ...selectedPopup, id: null } })
+          toast.info('Popup copiado')
+        }
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.key === 'v' && clipboard && currentSlide) {
+        if (clipboard.type === 'navigation') {
+          saveMutation.mutate({ ...clipboard.data, slideId: currentSlide.id, leftPercent: clipboard.data.leftPercent + 2, topPercent: clipboard.data.topPercent + 2 })
+          toast.success('Navegación pegada')
+        } else {
+          savePopupMutation.mutate({ popup: { ...clipboard.data, slideId: currentSlide.id, buttonLeft: clipboard.data.buttonLeft + 2, buttonTop: clipboard.data.buttonTop + 2 } })
+          toast.success('Popup pegado')
+        }
+      }
+
+      // Delete / Suppress keybind
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        const selectedLink = links.find(l => l.id === selectedLinkId)
+        const selectedPopup = popups.find(p => p.id === selectedPopupId)
+
+        if (selectedLink && typeof selectedLink.id === 'number') {
+          deleteMutation.mutate(selectedLink.id)
+        } else if (selectedPopup && typeof selectedPopup.id === 'number') {
+          deletePopupMutation.mutate(selectedPopup.id)
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selectedLinkId, selectedPopupId, links, popups, clipboard, currentSlide])
+
   const handleUpdateLink = (linkId: number | string, updates: Partial<NavigationLink>) => {
-    // For MVP, we'll update the cache optimistically or just wait for the save button if we add one.
-    // The plan says "CRUD para actualizar los links", I'll make it auto-save for now on certain actions
-    // or just local state if it's a drag/resize.
-    
-    // Optimistic local update in query cache
     queryClient.setQueryData(['editor-data', id], (old: EditorDataResponse | undefined) => {
         if (!old) return old
         return {
@@ -114,11 +156,27 @@ export function EditorPage() {
         }
     })
 
-    // If it's a property update (like targetSlideId), auto-save
-    if (updates.targetSlideId !== undefined && typeof linkId === 'number') {
+    if (typeof linkId === 'number') {
         const link = links.find(l => l.id === linkId)
         if (link) {
             saveMutation.mutate({ ...link, ...updates })
+        }
+    }
+  }
+
+  const handleUpdatePopup = (popupId: number | string, updates: Partial<Popup>) => {
+    queryClient.setQueryData(['editor-data', id], (old: EditorDataResponse | undefined) => {
+      if (!old) return old
+      return {
+        ...old,
+        popups: old.popups.map(p => p.id === popupId ? { ...p, ...updates } : p)
+      }
+    })
+
+    if (typeof popupId === 'number') {
+        const popup = popups.find(p => p.id === popupId)
+        if (popup) {
+            savePopupMutation.mutate({ popup: { ...popup, ...updates } })
         }
     }
   }
@@ -133,18 +191,40 @@ export function EditorPage() {
     setSelectedPopupId(null)
   }
 
-  const handleUpdatePopup = (popupId: number | string, updates: Partial<Popup>) => {
-    queryClient.setQueryData(['editor-data', id], (old: EditorDataResponse | undefined) => {
-      if (!old) return old
-      return {
-        ...old,
-        popups: old.popups.map(p => p.id === popupId ? { ...p, ...updates } : p)
-      }
-    })
-  }
-
   const selectedLink = links.find(l => l.id === selectedLinkId) || null
   const selectedPopup = popups.find(p => p.id === selectedPopupId) || null
+
+  const replicateLinkMutation = useMutation({
+    mutationFn: async ({ link, targetSlideIds }: { link: NavigationLink, targetSlideIds: number[] }) => {
+      const promises = targetSlideIds.map(slideId => {
+        const { id, ...rest } = link
+        return apiClient.post(`/slides/${slideId}/navigation`, { ...rest, slideId })
+      })
+      return Promise.all(promises)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['editor-data', id] })
+      toast.success('Enlace replicado correctamente')
+    }
+  })
+
+  const replicatePopupMutation = useMutation({
+    mutationFn: async ({ popup, targetSlideIds }: { popup: Popup, targetSlideIds: number[] }) => {
+      const promises = targetSlideIds.map(slideId => {
+        const { id, ...rest } = popup
+        const formData = new FormData()
+        Object.entries(rest).forEach(([key, value]) => {
+          if (value !== null && value !== undefined) formData.append(key, value.toString())
+        })
+        return apiClient.post(`/slides/${slideId}/popups`, formData)
+      })
+      return Promise.all(promises)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['editor-data', id] })
+      toast.success('Popup replicado correctamente')
+    }
+  })
 
   if (isLoading) {
     return (
@@ -218,6 +298,8 @@ export function EditorPage() {
           onDeletePopup={(popupId) => deletePopupMutation.mutate(popupId)}
           isPreviewVisible={isPreviewVisible}
           onTogglePreview={() => setIsPreviewVisible(prev => !prev)}
+          onReplicateLink={(link, targetSlideIds) => replicateLinkMutation.mutate({ link, targetSlideIds })}
+          onReplicatePopup={(popup, targetSlideIds) => replicatePopupMutation.mutate({ popup, targetSlideIds })}
         />
       </div>
     </div>
